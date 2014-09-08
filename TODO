@@ -1,9 +1,7 @@
-* optimize scan iterations further
+* for a larger number of factors, it seems that the BatchedInvOp is now the bottleneck. Can this be optimized further?
 
-* test on GTX 680
+* implement destructive version of BatchMatrixInvOp
 
-* profile and figure out a way to speed this up, it's pretty slow.
-    not recomputing Y_e every time for each batch update might help.
-    GpuAdvancedSubtensor1 seems to be the culprit.
+* any ideas to optimize scan further?
 
-* implement destructive version of BatchMatrixInvOp (although for now it only takes up 10% of the time so it's not worth optimizing)
+* port some new optimizations to the CPU version
