@@ -1,3 +1,7 @@
+* try doing a single advanced indexing operation for the entire batch. Then slice the resulting array in each iteration.
+
+* test on GTX 680
+
 * profile and figure out a way to speed this up, it's pretty slow.
     not recomputing Y_e every time for each batch update might help.
     GpuAdvancedSubtensor1 seems to be the culprit.

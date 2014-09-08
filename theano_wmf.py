@@ -40,18 +40,37 @@ def batch_update_expression(batch_index, Y, indptr, indices, data, YTYpR, byY, b
     hi = T.minimum((batch_index + 1) * batch_size, m)
     current_batch_size = hi - lo
 
-    b_y = Y[:, f]
-    Y_e = T.set_subtensor(Y[:, f], T.ones((Y.shape[0],))) # TODO: this could mean that a new copy of Y is made for every batch. 
-    # two possible solutions: either make this a shared variable, or do the set_subtensor on Y_u inside the scan loop.
+    lo_batch = indptr[lo]
+    hi_batch = indptr[hi] # hi - 1 + 1
+
+    i_batch = indices[lo_batch:hi_batch]
+    s_batch = data[lo_batch:hi_batch]
+    Y_batch = Y[i_batch]
+
+    b_y_batch = Y_batch[:, f]
+    Y_e_batch = T.set_subtensor(Y_batch[:, f], T.ones((Y_batch.shape[0],)))
+
+    # b_y = Y[:, f]
+    # Y_e = T.set_subtensor(Y[:, f], T.ones((Y.shape[0],)))
 
     # scan iteration helper function that computes A and B for the current index
     def fn(k):
-        k_lo, k_hi = indptr[k], indptr[k + 1]
-        i_u = indices[k_lo:k_hi]
-        s_u = data[k_lo:k_hi]
+        # k_lo, k_hi = indptr[k], indptr[k + 1]
+        # i_u = indices[k_lo:k_hi]
+        # s_u = data[k_lo:k_hi]
 
-        Y_u = Y_e[i_u]
-        b_y_u = b_y[i_u]
+        # Y_u = Y_e[i_u]
+        # b_y_u = b_y[i_u]
+
+        # A = T.dot((1 - b_y_u) * s_u + 1, Y_u)
+        # B = T.dot(Y_u.T, Y_u * s_u.dimshuffle(0, 'x'))
+
+        lo_iter = indptr[k] - lo_batch
+        hi_iter = indptr[k + 1] - lo_batch
+
+        s_u = s_batch[lo_iter:hi_iter]
+        Y_u = Y_e_batch[lo_iter:hi_iter]
+        b_y_u = b_y_batch[lo_iter:hi_iter]
 
         A = T.dot((1 - b_y_u) * s_u + 1, Y_u)
         B = T.dot(Y_u.T, Y_u * s_u.dimshuffle(0, 'x'))
