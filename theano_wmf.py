@@ -50,6 +50,12 @@ def batch_update_expression(batch_index, Y, indptr, indices, data, YTYpR, byY, b
     b_y_batch = Y_batch[:, f]
     Y_e_batch = T.set_subtensor(Y_batch[:, f], T.ones((Y_batch.shape[0],)))
 
+    # precompute the left hand side of the dot product for computing A for the entire batch.
+    a_lhs_batch = (1 - b_y_batch) * s_batch + 1
+
+    # also precompute the right hand side of the dot product for computing B for the entire batch.
+    b_rhs_batch = Y_e_batch * s_batch.dimshuffle(0, 'x')
+
     # b_y = Y[:, f]
     # Y_e = T.set_subtensor(Y[:, f], T.ones((Y.shape[0],)))
 
@@ -70,10 +76,11 @@ def batch_update_expression(batch_index, Y, indptr, indices, data, YTYpR, byY, b
 
         s_u = s_batch[lo_iter:hi_iter]
         Y_u = Y_e_batch[lo_iter:hi_iter]
-        b_y_u = b_y_batch[lo_iter:hi_iter]
+        a_lhs_u = a_lhs_batch[lo_iter:hi_iter]
+        b_rhs_u = b_rhs_batch[lo_iter:hi_iter]
 
-        A = T.dot((1 - b_y_u) * s_u + 1, Y_u)
-        B = T.dot(Y_u.T, Y_u * s_u.dimshuffle(0, 'x'))
+        A = T.dot(a_lhs_u, Y_u)
+        B = T.dot(Y_u.T, b_rhs_u)
 
         return A, B
 

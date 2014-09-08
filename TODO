@@ -1,4 +1,4 @@
-* try doing a single advanced indexing operation for the entire batch. Then slice the resulting array in each iteration.
+* optimize scan iterations further
 
 * test on GTX 680
 
