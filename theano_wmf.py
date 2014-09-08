@@ -139,7 +139,7 @@ def factorize(S, num_factors, batch_size, lambda_reg=1e-5, num_iterations=20, in
     data_t = theano.shared(ST.data.astype(theano.config.floatX))
 
     # output (factors)
-    U = theano.shared(np.zeros((num_items, num_factors), dtype=theano.config.floatX)) # no need to initialize U randomly, it will be overwritten anyway
+    U = theano.shared(np.zeros((num_users, num_factors), dtype=theano.config.floatX)) # no need to initialize U randomly, it will be overwritten anyway
     V = theano.shared(np.random.randn(num_items, num_factors).astype(theano.config.floatX) * init_std)
 
     # things to precompute once per (half-)iteration (stays constant across batches)

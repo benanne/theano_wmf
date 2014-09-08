@@ -4,7 +4,7 @@ import theano_wmf
 np.random.seed(123)
 
 
-B = np.load("/home/sander/git/wmf/test_matrix.pkl")
+B = np.load("test_matrix.pkl")
 
 # convert into a surplus confidence matrix
 
