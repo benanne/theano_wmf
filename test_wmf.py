@@ -17,7 +17,7 @@ S.data = alpha * np.log(1 + S.data / epsilon)
 
 num_factors = 40 + 1
 num_iterations = 1
-batch_size = 10000
+batch_size = 1000
 lambda_reg = 1e-5
 
 

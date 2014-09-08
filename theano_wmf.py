@@ -56,30 +56,22 @@ def batch_update_expression(batch_index, Y, indptr, indices, data, YTYpR, byY, b
     # also precompute the right hand side of the dot product for computing B for the entire batch.
     b_rhs_batch = Y_e_batch * s_batch.dimshuffle(0, 'x')
 
-    # b_y = Y[:, f]
-    # Y_e = T.set_subtensor(Y[:, f], T.ones((Y.shape[0],)))
+    # precompute the terms of A so all we have to do is sum a bunch of vectors in the scan iterations.
+    # in each iteration, A = T.dot(a_lhs_u, Y_u)
+    # so we can precompute A_terms_batch = a_lhs_batch * Y_e_batch and then A = A_terms_batch[lo_iter:hi_iter].sum(0)
+    A_terms_batch = a_lhs_batch.dimshuffle(0, 'x') * Y_e_batch
 
     # scan iteration helper function that computes A and B for the current index
     def fn(k):
-        # k_lo, k_hi = indptr[k], indptr[k + 1]
-        # i_u = indices[k_lo:k_hi]
-        # s_u = data[k_lo:k_hi]
-
-        # Y_u = Y_e[i_u]
-        # b_y_u = b_y[i_u]
-
-        # A = T.dot((1 - b_y_u) * s_u + 1, Y_u)
-        # B = T.dot(Y_u.T, Y_u * s_u.dimshuffle(0, 'x'))
-
         lo_iter = indptr[k] - lo_batch
         hi_iter = indptr[k + 1] - lo_batch
 
         s_u = s_batch[lo_iter:hi_iter]
         Y_u = Y_e_batch[lo_iter:hi_iter]
-        a_lhs_u = a_lhs_batch[lo_iter:hi_iter]
+        A_terms_u = A_terms_batch[lo_iter:hi_iter]
         b_rhs_u = b_rhs_batch[lo_iter:hi_iter]
 
-        A = T.dot(a_lhs_u, Y_u)
+        A = A_terms_u.sum(axis=0)
         B = T.dot(Y_u.T, b_rhs_u)
 
         return A, B
